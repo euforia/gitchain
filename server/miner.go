@@ -98,7 +98,6 @@ func mineBlock(status MiningStatus, srv *context.T, log log15.Logger, previousBl
 			}
 		}
 	}
-
 }
 
 func MiningFactory(srv *context.T) {

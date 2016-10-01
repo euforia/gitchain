@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"github.com/gitchain/gitchain/keys"
-	trans "github.com/gitchain/gitchain/transaction"
 	"github.com/gitchain/gitchain/types"
+
+	trans "github.com/gitchain/gitchain/transaction"
 	"github.com/stretchr/testify/assert"
 )
 

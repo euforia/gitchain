@@ -10,13 +10,13 @@ import (
 
 	"os"
 
-	"github.com/alecthomas/kingpin"
 	"github.com/gitchain/gitchain/server"
 	"github.com/gitchain/gitchain/server/api"
 	"github.com/gitchain/gitchain/server/config"
 	"github.com/gitchain/gitchain/server/context"
 	httpserver "github.com/gitchain/gitchain/server/http"
 	netserver "github.com/gitchain/gitchain/server/net"
+	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/gorilla/rpc/json"
 )
@@ -31,23 +31,34 @@ func jsonrpc(cfg *config.T, method string, req, res interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	json.DecodeClientResponse(resp.Body, res)
-	return nil
+
+	return json.DecodeClientResponse(resp.Body, res)
 }
 
-func main() {
-	var configFile, dataPath, assets, netHostname string
-	var httpPort, netPort int
+var (
+	app         = kingpin.New("gitchain", "Gitchain daemon and command line interface")
+	configFile  string
+	dataPath    string
+	assets      string
+	netHostname string
+	httpPort    int
+	netPort     int
 
-	var alias, repo, random, hash, node string
+	alias, repo, random, hash, node string
 
-	app := kingpin.New("gitchain", "Gitchain daemon and command line interface")
+	serverMode = app.Command("server", "Start server")
+)
+
+func init() {
 	app.Flag("config", "configuration file").Short('c').ExistingFileVar(&configFile)
-	app.Flag("data-path", "path to the data directory").Short('d').StringVar(&dataPath)
-	app.Flag("development-mode-assets", "path to the assets (ui) directory, only for developmenty").ExistingDirVar(&assets)
+	app.Flag("data-path", "path to the data directory").Short('d').Default("gitchain.db").StringVar(&dataPath)
+	app.Flag("development-mode-assets", "path to the assets (ui) directory, only for development").ExistingDirVar(&assets)
 	app.Flag("net-hostname", "Gitchain network hostname").StringVar(&netHostname)
 	app.Flag("http-port", "HTTTP port to connect to or listen on").IntVar(&httpPort)
 	app.Flag("net-port", "Network port to listen").IntVar(&netPort)
+}
+
+func main() {
 
 	keypairGenerate := app.Command("keypair-generate", "Generates a new keypair")
 	keypairGenerate.Arg("alias", "Keypair name to save it under").Required().StringVar(&alias)
@@ -85,10 +96,7 @@ func main() {
 	join.Arg("node", "Node address <host:port>").Required().StringVar(&node)
 
 	command := kingpin.MustParse(app.Parse(os.Args[1:]))
-
 	var cfg *config.T
-	var err error
-
 	cfg = config.Default()
 
 	cfg.General.DataPath = dataPath
@@ -102,8 +110,7 @@ func main() {
 	}
 
 	if len(configFile) > 0 {
-		err = config.ReadFile(configFile, cfg)
-		if err != nil {
+		if err := config.ReadFile(configFile, cfg); err != nil {
 			log.Printf("Error read config file %s: %v", configFile, err) // don't use log15 here
 			os.Exit(1)
 		}
@@ -123,11 +130,11 @@ func main() {
 			fmt.Printf("Server can't generate the private key\n")
 			os.Exit(1)
 		}
+
 	case "keypair-primary":
 		if alias != "" {
 			var resp api.SetMainKeyReply
-			err := jsonrpc(cfg, "KeyService.SetMainKey", &api.SetMainKeyArgs{Alias: alias}, &resp)
-			if err != nil {
+			if err := jsonrpc(cfg, "KeyService.SetMainKey", &api.SetMainKeyArgs{Alias: alias}, &resp); err != nil {
 				fmt.Printf("Can't set main private key to %s because of %v\n", alias, err)
 				os.Exit(1)
 			}
@@ -138,13 +145,13 @@ func main() {
 			fmt.Printf("Successfully set main private key to %s\n", alias)
 		} else {
 			var mainKeyResp api.GetMainKeyReply
-			err = jsonrpc(cfg, "KeyService.GetMainKey", &api.GetMainKeyArgs{}, &mainKeyResp)
-			if err != nil {
+			if err := jsonrpc(cfg, "KeyService.GetMainKey", &api.GetMainKeyArgs{}, &mainKeyResp); err != nil {
 				fmt.Printf("Can't discover main private key because of %v\n", err)
 				os.Exit(1)
 			}
 			fmt.Println(mainKeyResp.Alias)
 		}
+
 	case "keypair-list":
 		var resp api.ListPrivateKeysReply
 		err := jsonrpc(cfg, "KeyService.ListPrivateKeys", &api.ListPrivateKeysArgs{}, &resp)
@@ -153,8 +160,7 @@ func main() {
 			os.Exit(1)
 		}
 		var mainKeyResp api.GetMainKeyReply
-		err = jsonrpc(cfg, "KeyService.GetMainKey", &api.GetMainKeyArgs{}, &mainKeyResp)
-		if err != nil {
+		if err = jsonrpc(cfg, "KeyService.GetMainKey", &api.GetMainKeyArgs{}, &mainKeyResp); err != nil {
 			fmt.Printf("Can't discover main private key because of %v\n", err)
 			os.Exit(1)
 		}
@@ -167,6 +173,7 @@ func main() {
 				}
 			}(), resp.Aliases[i])
 		}
+
 	case "name-reservation":
 		var resp api.NameReservationReply
 		err := jsonrpc(cfg, "NameService.NameReservation", &api.NameReservationArgs{Alias: alias, Name: repo}, &resp)
@@ -251,7 +258,13 @@ func main() {
 			fmt.Printf("Can't join because of %v\n", err)
 			os.Exit(1)
 		}
-	default:
+
+	case "server":
+		log.Printf(`Starting server:
+  HTTP   : :%d
+  Cluster: :%d
+`, cfg.API.HttpPort, cfg.Network.Port)
+
 		srv := &context.T{Config: cfg}
 		err := srv.Init()
 		if err != nil {

@@ -27,6 +27,6 @@ Lets say you called them git1.config and git2.config, now you can start them as
 simply as this:
 
 ```
-$ gitchain --config git1.config
-$ gitchain --config git2.config
+$ gitchain --config git1.config server
+$ gitchain --config git2.config server
 ```

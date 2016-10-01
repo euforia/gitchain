@@ -10,7 +10,7 @@ type T struct {
 }
 
 func NewDB(path string) (*T, error) {
-	db, err := bolt.Open(path, 0666)
+	db, err := bolt.Open(path, 0666, nil)
 	return &T{Path: path, DB: db}, err
 }
 

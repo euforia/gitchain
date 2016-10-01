@@ -14,8 +14,8 @@ Gitchain is an application of ideas behind Bitcoin, Namecoin and DHT applied to 
 
 [Support the project on Kickstarter](https://www.kickstarter.com/projects/612530753/gitchain)
 
-Build Instructions
-------------------
+Build
+-----
 
 Make sure you have go1.2.2 installed and your GOPATH variable is pointing to
 a user-writeable directory (like $USER/go)
@@ -25,3 +25,27 @@ a user-writeable directory (like $USER/go)
 $ make prepare # (only first time or whenever Godeps file is updated)
 $ make
 ```
+
+Run
+---
+
+Start the server using the provided test config:
+
+	gitchain --config testdata/1.config server
+
+Usage
+-----
+
+1. Create keypair
+
+	gitchain keypair-generate testkey
+
+2. Create repository
+
+	- Create name reservation
+
+		gitchain name-reservation testkey test-repo
+
+	- Create name allocation
+
+		gitchain name-allocation testkey test-repo <random_number_from_above_cmd>
