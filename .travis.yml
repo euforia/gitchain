@@ -4,5 +4,5 @@ go:
 install:
   - make prepare
 script:
-  - make
   - make test
+  - make all

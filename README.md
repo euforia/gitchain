@@ -17,9 +17,7 @@ Gitchain is an application of ideas behind Bitcoin, Namecoin and DHT applied to 
 Build
 -----
 
-Make sure you have go1.2.2 installed and your GOPATH variable is pointing to
-a user-writeable directory (like $USER/go)
-
+Make sure you have atleast go1.6.3 installed
 
 ```shell
 $ make prepare # (only first time or whenever Godeps file is updated)

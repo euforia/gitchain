@@ -2,3 +2,4 @@
 /gitchain*.db
 /*.config
 /tmp
+/vendor
