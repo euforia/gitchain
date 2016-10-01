@@ -1,6 +1,6 @@
-Gitchain
-========
-Decentralized P2P Git Network
+Gitchain (revival-attempt)
+==========================
+Decentralized P2P Git Network using a private blockchain.
 
 [![Build Status](https://secure.travis-ci.org/gitchain/gitchain.png)](http://travis-ci.org/gitchain/gitchain)
 
@@ -31,7 +31,9 @@ Run
 
 Start the server using the provided test config:
 
-	gitchain --config testdata/1.config server
+```shell
+$ gitchain --config testdata/1.config server
+```
 
 Usage
 -----

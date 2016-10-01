@@ -3,7 +3,6 @@ package config
 import (
 	"runtime"
 
-	//"code.google.com/p/gcfg"
 	"gopkg.in/gcfg.v1"
 )
 
