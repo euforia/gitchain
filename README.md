@@ -30,7 +30,7 @@ Run
 Start the server using the provided test config:
 
 ```shell
-$ gitchain --config testdata/1.config server
+$ gitchain --config testdata/1.conf server
 ```
 
 Usage
